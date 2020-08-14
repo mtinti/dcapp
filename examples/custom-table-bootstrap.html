@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>dc.tableview - working with bootstrap</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dc/3.1.5/dc.min.css">
+	<link rel="stylesheet" type="text/css" href="../build/dc-tableview-bs.css">
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css">
+	<link rel="stylesheet" type="text/css" href="./examples.css">
+    <link rel="stylesheet" href="//rawgithub.com/Caged/d3-tip/master/examples/example-styles.css">
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.12.0/d3.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter2/1.4.7/crossfilter.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dc/3.1.5/dc.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.js"></script>
+</head>
+
+<body>
+    <div id="alerts"></div>
+    <div class="row no-gutters">
+        <div class="col-md-6">
+
+            <div id="container1" class="chart-container"></div>
+            
+            
+            
+            
+            <div class="container-fluid">
+                <div id="table-settings" class="btn-group">
+                    <button type="button" class="btn btn-outline-secondary">Settings</button>
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a id="use-paging" class="dropdown-item" href="#">Use paging</a>
+                        <a id="use-scrolling" class="dropdown-item" href="#">Use scrolling</a>
+                    </div>
+                    </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+ 
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                                <h5 class="card-title">Scatter Chart</h5>
+                               
+                                
+                                <div id="container2" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row no-gutters">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Pie Chart</h5>
+                            <div id="container4" class="chart-container"></div>
+                            <div id="container3" class="chart-container"></div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script type="text/javascript" src="../build/dc-tableview-bs.js"></script>
+<script type="text/javascript">
+var ndx;
+//Gene_acc,Gene_id,log_FDR,srank,desc2,BSF_rank2,Log_Intensity
+d3.csv("./Dataset_min.csv").then((experiments) => {
+    console.log('parsing')
+    ndx = crossfilter(experiments);
+    var fmt = d3.format('02d');
+    var runDimension = ndx.dimension(function(d) {return fmt(+d.srank);}),
+        group = runDimension.group();
+
+    //var runDimension2 = ndx.dimension(function(d) {return fmt(+d.srank);}),
+    //    group2 = runDimension2.group().reduceCount();
+
+    //var runDimension3 = ndx.dimension(function(d) {return +d.Run;});
+    //var speedSumGroup = runDimension3.group().reduceSum(function(d) {return d.Speed * d.Run / 1000;});
+
+    var runDimensionScatter = ndx.dimension(function(d) {return [+d.BSF_rank2, +d.srank]; })
+    var runDimensionScatter2 = ndx.dimension(function(d) {return [+d.log_FDR, +d.srank]; })
+
+    var chart1 = dc.tableview("#container1", "group1");
+    var chart2 = dc.scatterPlot("#container2", "group1");
+    //var chart3 = dc.barChart("#container3", "group1");
+    var chart4 = dc.scatterPlot("#container4", "group1");
+
+
+
+    var names = [];
+    var desc = [];
+    var dict_names = {};
+    var dict_index = {};
+    var dict_index2 = {};
+    // function to turn string into number if possible
+    function numberParser(value){
+        return (+value) ? +value : value;
+    }
+
+    //ndx.dimension(function(d,i) { 
+    //    names.push( numberParser(d['Gene_id']));
+    //    desc.push( numberParser(d['desc']))
+    //    dict_names[d['Gene_id']]=d['Gene_acc'];
+    //    dict_index[d['Gene_acc']]=d['Gene_id'];
+    //    dict_index2[i]=d['Gene_acc'];
+        //console.log(i,d['Gene_id']);
+    //})
+
+    //experiments.forEach(function(d,i){
+    //        names.push( numberParser(d['Gene_id'])) ;
+    //        desc.push( numberParser(d['desc'])) ;
+    //        dict_names[d['Gene_id']]=i;
+    //        dict_index[i]=d['Gene_id'];
+    //        console.log(i,d['Gene_id']);
+            
+    //});
+
+
+
+    //experiments
+ 
+    //rowtip = d3.tip()
+    //    .attr('class', 'd3-tip')
+    //    .offset([-10, 0])
+    //    .html(function (d) { return d.Expt + ": "  + d.Run; });
+
+    chart1
+        .dimension(runDimension)
+        .group(group)
+        .columns([
+            { title: "Gene_acc", data: "Gene_acc" },
+            { title: "Gene_id", data: "Gene_id" },
+            { title: "log_FDR", data: "log_FDR" },
+            { title: "srank", data: "srank" },
+            { title: "BSF_rank2", data: "BSF_rank2" },
+            { title: "desc2", data: "desc2" },
+        ])
+        .enableColumnReordering(true)
+        .enablePaging(true)
+        .enablePagingSizeChange(true)
+        .enableSearch(true)
+        .enableScrolling(false)
+        .scrollingOptions({
+            scrollY: "31rem",
+            scrollCollapse: true,
+            deferRender: true,
+        })
+        .rowId("srank") 
+        
+        // .showGroups(true)
+        // .groupBy("Expt")
+        .responsive(true)
+        .select(false)
+        .fixedHeader(false)
+        .buttons(["csv"])//["pdf", "csv", "excel", "print"]
+        //.sortBy([["Expt", "desc"]])
+        .listeners({
+            rowClicked: function (row, data, index) {
+                var output = document.querySelector("#alerts");
+                output.innerHTML = createAlert(`Click on row ${index}!`, JSON.stringify(data));
+            },
+            rowDblClicked: function (row, data, index) {
+                var output = document.querySelector("#alerts");
+                output.innerHTML = createAlert(`Double click on row ${index}!`, JSON.stringify(data));
+            },
+            rowEnter: function (row, data, index) {
+                row.style.backgroundColor = "#eff9ff";
+                //var selector = '#chart4_'+data['Gene_acc'];
+                //console.log('selector',selector,data['Gene_acc'])
+                //d3.select(selector).style("stroke",'violet').attr("stroke-width",'10');
+                //var selector = '#chart2_'+data['Gene_acc'];
+                //console.log('selector',selector,data['Gene_acc'])
+                //d3.select(selector).style("stroke",'violet').attr("stroke-width",'10');
+                var nodes = d3.selectAll("path.symbol");
+                nodes.style("stroke-width", 10);
+                nodes.style("stroke", function(d,i){
+                    //d3.select(this).select("title");
+
+                    var x = d.key[0]
+                    var y = d.key[1]
+                    if ( (x == numberParser(data['log_FDR'])) && (y == numberParser(data['srank'])) ){
+                        return 'red';
+
+                    }
+                    if ( (x == numberParser(data['BSF_rank2'])) && (y == numberParser(data['srank'])) ){
+                        return 'red';
+
+                    }                    
+                    else{
+                        return '';
+                    }
+                    
+
+                    });
+                //nodes.style(function(d,i){
+                //    d3.select(this).style("stroke-width", 5);
+                //    console.log(d,i);
+                    //return "stroke-width", 5
+                //});
+                //nodes.style("stroke-width", 5);
+
+                //console.log(nodes);
+                //nodes.forEach(function(d,i){
+                //    console.log(d,i);
+                //});
+
+            },
+            rowLeave: function (row, data, index) {
+                row.style.backgroundColor = "";
+                var nodes = d3.selectAll("path.symbol");
+                nodes.style("stroke", '');
+                //var selector = '#chart4_'+data['Gene_acc'];
+                //d3.select(selector).style("stroke",'');
+                //var selector = '#chart2_'+data['Gene_acc'];
+                //d3.select(selector).style("stroke",'');
+
+            }
+        });
+    
+    
+    //console.log(chart2);
+    chart2
+        .dimension(runDimensionScatter)
+        .group(runDimensionScatter.group())
+        .x(d3.scaleLinear().domain([1,7200]))
+        .y(d3.scaleLinear().domain([-80,670]))
+        //.mouseZoomable(true)
+        .brushOn(true)
+        .symbolSize(5);
+        //.on('pretransition.add-tip', function(chart) {
+        //    chart2.selectAll("path.symbol")
+       // .call(tip)
+        //.on('mouseover', tip.show)
+        //.on('mouseout', tip.hide);
+         //   });
+    //.symbol(d3.symbolCircle);
+
+    //chart3.dimension(runDimension2)
+    //.group(group2).brushOn(false).x(d3.scaleLinear().domain([-20,20]));
+    
+    var tip = d3.tip().attr('class', 'd3-tip').html(function (d) {  return d.Gene_id});
+    chart4
+        .dimension(runDimensionScatter2)
+        .group(runDimensionScatter2.group())
+        .x(d3.scaleLinear().domain([-0.1,2.1]))
+        .y(d3.scaleLinear().domain([-80,670]))
+        .symbolSize(5)
+        //.mouseZoomable(true)
+        .brushOn(true);
+        //.on('renderlet', function(chart) {
+        //    chart.selectAll('path.symbol')
+        //    .call(tip)
+        //    .on('mouseover', tip.show)
+        //    .on('mouseout', tip.hide);}
+        //);
+        
+        
+        //.brush(false);//.mouseZoomable(true);
+        
+
+    chart1.render();
+    chart2.render();
+    //chart3.render();
+    chart4.render();
+    
+    //d3.selectAll("table.tr").attr("myid", function(d,i) { console.log(i);  return 'table_'+i; });
+    chart4.selectAll("path.symbol").attr("id", function(d,i) { return 'chart4_'+dict_index2[i]; });
+    chart2.selectAll("path.symbol").attr("id", function(d,i) { return 'chart2_'+dict_index2[i]; });
+
+    $("#table-settings #use-paging").on("click", (event, data) => {
+        chart1.enableScrolling(false);
+        chart1.fixedHeader(true);
+    });
+
+    $("#table-settings #use-scrolling").on("click", (event, data) => {
+        chart1.fixedHeader(false);
+        chart1.enablePaging(true);
+        chart1.enableScrolling(true);
+    });
+
+    //chart2.on('pretransition.add-tip', function(chart) {
+    //    chart2.selectAll('g.row')
+    //    .call(rowtip)
+    //    .on('mouseover', rowtip.show)
+    //    .on('mouseout', rowtip.hide);
+    //});
+
+    
+    //console.log(chart2)
+    //chart2.brush(false);
+    //chart4.brush.deactivate();
+    
+    //chart4.selectAll("path.symbol").call(tip);
+    //chart4.selectAll("path.symbol").on('mouseover',  tip.show ) .on('mouseout', tip.hide);
+    // console.log(chart2.selectAll("path.symbol"))
+
+    ///chart2.brushOn(false);
+    //c/hart1.brushOn(false);
+    //chart3.brushOn(false);
+    
+    '<rect class="overlay" pointer-events="all" cursor="crosshair" x="0" y="0" width="461.5" height="160"></rect>'
+    
+
+});
+
+
+
+
+
+const createAlert = (title, text, timeout = 3000) => {
+    setTimeout(() => document.querySelector("#alerts .alert").classList.replace("show", "hide"), timeout);
+
+    return `<div class="alert alert-success alert-dismissible fade show" role="alert">
+        <h6 class="alert-heading">${title}</h6> ${text}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>`;
+};
+
+</script>
+
+<style>
+    .d3-tip { 
+    
+    position: relative;
+    };
+
+    g {
+        pointer-events: none;
+    }
+
+
+</style>
+</body>
+</html>
